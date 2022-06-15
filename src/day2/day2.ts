@@ -7,25 +7,29 @@ export const day2_1 = (args: string[]): number => {
 
 
     // [配列の先頭文字列ごとに、値を集計]
-    // 水平方向の値
-    const horizonVal = argArray
-        .filter(v => v[0] == 'forward')
-        .reduce((acc, v) => acc + parseInt(v[1]), 0)
+    const initialValue = [0, 0, 0]
+    const [forwardV, downV, upV] =
+        argArray.reduce(([forwardV, downV, upV], [pos, value]) => {
+            // 水平方向の値
+            if (pos === "forward") {
+                return [forwardV + parseInt(value), downV, upV]
+            }
 
-    // 深さ(減少)の値
-    const depthUpVal = argArray
-        .filter(v => v[0] == 'up')
-        .reduce((acc, v) => acc + parseInt(v[1]), 0)
+            // 深さ(増加)の値
+            if (pos === "down") {
+                return [forwardV, downV + parseInt(value), upV]
+            }
 
+            // 深さ(増加)の値
+            if (pos === "up") {
+                return [forwardV, downV, upV + parseInt(value)]
+            }
 
-    // 深さ(増加)の値
-    const depthDownVal = argArray
-        .filter(v => v[0] == 'down')
-        .reduce((acc, v) => acc + parseInt(v[1]), 0)
-
+            return [forwardV, downV, upV]
+        }, initialValue)
 
     // 水平方向の値 × 深さを返す
-    return horizonVal * (depthDownVal - depthUpVal)
+    return forwardV * (downV - upV)
 }
 
 export const day2_2 = (args: string[]): number => {
@@ -38,23 +42,24 @@ export const day2_2 = (args: string[]): number => {
     // aimの値を計算する必要があるため、走査中に方向を判定。
     // 操作中にaimの値を加算する
     let aim = 0
-    const resultArray = argArray.reduce(([horizon, depth], [pos, unit]) => {
+    const [horizon, depth] =
+        argArray.reduce(([horizon, depth], [pos, value]) => {
 
-        if (pos === "forward") {
-            return [horizon + parseInt(unit), depth + (parseInt(unit) * aim)]
-        }
+            if (pos === "forward") {
+                return [horizon + parseInt(value), depth + (parseInt(value) * aim)]
+            }
 
-        if (pos === "up") {
-            aim -= parseInt(unit)
-        }
+            if (pos === "up") {
+                aim -= parseInt(value)
+            }
 
-        if (pos === "down") {
-            aim += parseInt(unit)
-        }
+            if (pos === "down") {
+                aim += parseInt(value)
+            }
 
-        return [horizon, depth]
+            return [horizon, depth]
 
-    }, [0, 0])
+        }, [0, 0])
 
-    return resultArray[0] * resultArray[1]
+    return horizon * depth
 }
