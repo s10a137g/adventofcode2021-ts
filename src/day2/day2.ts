@@ -38,18 +38,22 @@ export const day2_2 = (args: string[]): number => {
     // aimの値を計算する必要があるため、走査中に方向を判定。
     // 操作中にaimの値を加算する
     let aim = 0
-    const resultArray = argArray.reduce((acc, v) => {
-        if (v[0] === "forward") {
-            return [acc[0] + parseInt(v[1]), acc[1] + (parseInt(v[1]) * aim)]
-        } else if (v[0] === "up") {
-            aim -= parseInt(v[1])
-            return [acc[0], acc[1]]
-        } else if (v[0] === "down") {
-            aim += parseInt(v[1])
-            return [acc[0], acc[1]]
-        } else {
-            return [acc[0], acc[1]]
+    const resultArray = argArray.reduce(([horizon, depth], [pos, unit]) => {
+
+        if (pos === "forward") {
+            return [horizon + parseInt(unit), depth + (parseInt(unit) * aim)]
         }
+
+        if (pos === "up") {
+            aim -= parseInt(unit)
+        }
+
+        if (pos === "down") {
+            aim += parseInt(unit)
+        }
+
+        return [horizon, depth]
+
     }, [0, 0])
 
     return resultArray[0] * resultArray[1]
