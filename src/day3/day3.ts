@@ -33,33 +33,40 @@ export const day3_2 = (args: string[]): number => {
     const argArray = args.map(arg => arg.split(""))
 
 
-    const o2  = f(argArray, 0, 'oxygen')
-    const co2 = f(argArray, 0, 'co2')
+    const o2 = recursiveFindRating(argArray, 0, 'oxygen')
+    const co2 = recursiveFindRating(argArray, 0, 'co2')
 
     return parseInt(o2.flat().join(''), 2) * parseInt(co2.flat().join(''), 2)
 }
 
-export const f = (targetArr: string[][], index: number, gasType: string): string[][] => {
+/**
+ * 再帰的にrateを満たす配列を取得する
+ *
+ * @param targetArr
+ * @param index
+ * @param gasType
+ */
+export const recursiveFindRating = (targetArr: string[][], index: number, gasType: string): string[][] => {
 
     if (targetArr.length === 1 || !targetArr[0][index]) {
         return targetArr
     }
 
-    const nextArr = findRating(targetArr, index, gasType)
-    return f(nextArr, index + 1, gasType)
+    return recursiveFindRating(findRating(targetArr, index, gasType), index + 1, gasType)
 }
 
 export const findRating = (targetArr: string[][], index: number, gasType: string): string[][] => {
-    const count = targetArr
-        .map(v => v[index])
-        .reduce(([zeroCount, oneCount], v) =>
-            v === '0' ? [zeroCount + 1, oneCount] : [zeroCount, oneCount + 1], [0, 0]
-        )
+    const indexArr = targetArr.map(v => v[index])
+
+    const initialValue = [0, 0]
+    const [zeroCount, oneCount] = indexArr.reduce(([zeroCount, oneCount], v) => {
+        return v === '0' ? [zeroCount + 1, oneCount] : [zeroCount, oneCount + 1]
+    }, initialValue)
 
 
     const targetNum = gasType === 'oxygen'
-        ? count[1] >= count[0] ? '1' : '0'
-        : count[1] >= count[0] ? '0' : '1'
+        ? oneCount >= zeroCount ? '1' : '0'
+        : oneCount >= zeroCount ? '0' : '1'
 
     return targetArr.filter(v => v[index] === targetNum)
 }
