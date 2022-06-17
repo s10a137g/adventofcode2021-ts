@@ -15,6 +15,7 @@ export const day3_1 = (args: string[]): number => {
     }
 
     // 各INDEX行ごとに'0', '1' の要素数を集計し、gamma, epsilonの値を求める
+    const initialValue = ['', '']
     const [gamma, epsilon] = convertArray.reduce(([gammaArr, epsilonArr], row) => {
         const zeroCount = row.filter(v => v === '0').length
         const oneCount = row.filter(v => v === '1').length
@@ -22,7 +23,7 @@ export const day3_1 = (args: string[]): number => {
         return oneCount > zeroCount
             ? [gammaArr.concat('1'), epsilonArr.concat('0')]
             : [gammaArr.concat('0'), epsilonArr.concat('1')]
-    }, ['', ''])
+    }, initialValue)
 
 
     return parseInt(gamma, 2) * parseInt(epsilon, 2)
@@ -33,8 +34,8 @@ export const day3_2 = (args: string[]): number => {
     const argArray = args.map(arg => arg.split(""))
 
 
-    const o2 = recursiveFindRating(argArray, 0, 'oxygen')
-    const co2 = recursiveFindRating(argArray, 0, 'co2')
+    const o2 = recursiveFindMatchBitRows(argArray, 0, 'o2')
+    const co2 = recursiveFindMatchBitRows(argArray, 0, 'co2')
 
     return parseInt(o2.flat().join(''), 2) * parseInt(co2.flat().join(''), 2)
 }
@@ -46,27 +47,29 @@ export const day3_2 = (args: string[]): number => {
  * @param index
  * @param gasType
  */
-export const recursiveFindRating = (targetArr: string[][], index: number, gasType: string): string[][] => {
+export const recursiveFindMatchBitRows = (targetArr: string[][], index: number, gasType: string): string[][] => {
 
     if (targetArr.length === 1 || !targetArr[0][index]) {
         return targetArr
     }
 
-    return recursiveFindRating(findRating(targetArr, index, gasType), index + 1, gasType)
+    return recursiveFindMatchBitRows(findMatchBitRows(targetArr, index, gasType), index + 1, gasType)
 }
 
-export const findRating = (targetArr: string[][], index: number, gasType: string): string[][] => {
+export const findMatchBitRows = (targetArr: string[][], index: number, gasType: string): string[][] => {
     const indexArr = targetArr.map(v => v[index])
 
     const initialValue = [0, 0]
-    const [zeroCount, oneCount] = indexArr.reduce(([zeroCount, oneCount], v) => {
-        return v === '0' ? [zeroCount + 1, oneCount] : [zeroCount, oneCount + 1]
+    const [zeroCount, oneCount] = indexArr.reduce(([zeroCount, oneCount], eachIndexValue) => {
+        return eachIndexValue === '0' ? [zeroCount + 1, oneCount] : [zeroCount, oneCount + 1]
     }, initialValue)
 
 
-    const targetNum = gasType === 'oxygen'
+    // 気体のタイプによって基準となるbitの判定条件を変える
+    const targetNum = gasType === 'o2'
         ? oneCount >= zeroCount ? '1' : '0'
         : oneCount >= zeroCount ? '0' : '1'
 
+    // 全行から基準となるbitの判定条件値に合致する行のみを抽出して返す
     return targetArr.filter(v => v[index] === targetNum)
 }
