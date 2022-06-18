@@ -1,68 +1,16 @@
-export class Row {
-    elements: number[]
+import { Card } from "./Card";
 
-    constructor(elements: string[]) {
-        this.elements = elements.map(v => +v)
-    }
-}
-
-export class Card {
-    rows: Row[]
-
-    constructor(strRows: string[][]) {
-        this.rows = strRows.map(row => new Row(row))
-    }
-
-    transpose(): Card {
-        const arg: string[][] = []
-        for (let i = 0; i < this.rows.length; i++) {
-            for (let j = 0; j < this.rows[i].elements.length; j++) {
-                if (!arg[j]) {
-                    arg.push(['' + this.rows[i].elements[j]])
-                } else {
-                    arg[j].push('' + this.rows[i].elements[j])
-                }
-            }
-        }
-        return new Card(arg)
-    }
-
-    isBingo(searchArg: number[]): [boolean, number | null] {
-        const unmatchedElements: number[] = []
-        let bingoFlg = false
-        for (let row of this.rows) {
-            const tmpMatchedElements = []
-            for (let element of row.elements) {
-                if(!searchArg.includes(element)) {
-                    unmatchedElements.push(element)
-                } else {
-                    tmpMatchedElements.push(element)
-                }
-            }
-            if (tmpMatchedElements.length === 5) {
-                bingoFlg = true
-            }
-        }
-
-        if (bingoFlg) {
-            return [true, unmatchedElements.reduce((sum, v) => sum += v)]
-        } else {
-            return [false, null]
-        }
-    }
-}
-
-export const doBingo = (cards: Card[], searchArgs: number[]): [number | null, number] => {
+export const doBingo = (cards: Card[], searchArgs: number[]): number | null => {
     const allCards = cards.concat(cards.map(card => card.transpose()))
 
     for (let card of allCards) {
-        const [isBingo, unmatchSum] = card.isBingo(searchArgs)
-        if (isBingo && !!unmatchSum) {
-            return [unmatchSum, searchArgs[searchArgs.length - 1]]
+        const unmarkedSum = card.getSumOfUnmarkedElement(searchArgs)
+        if (!!unmarkedSum) {
+            return unmarkedSum
         }
 
     }
-    return [null, searchArgs[searchArgs.length - 1]]
+    return null
 }
 
 export const createCards = (rows: string[][]): Card[] => {
@@ -83,8 +31,7 @@ export const createCards = (rows: string[][]): Card[] => {
 }
 
 
-export const
-    day4_1 = (args: string[]): number => {
+export const day4_1 = (args: string[]): number => {
         // 1行目を抽選番号として定義
         const selectedNumbers = args[0].split(',')
 
@@ -93,12 +40,13 @@ export const
 
         const cards = createCards(carsRows.slice(1))
 
-        const processSelectedNumbers = []
+        const currentSelectedNumbers = []
+
         for (let n of selectedNumbers) {
-            processSelectedNumbers.push(+n)
-            const [unmatchSum, bingoNumber] = doBingo(cards, processSelectedNumbers)
-            if (!!unmatchSum) {
-                return unmatchSum * bingoNumber
+            currentSelectedNumbers.push(+n)
+            const unmarkedElements = doBingo(cards, currentSelectedNumbers)
+            if (!!unmarkedElements) {
+                return unmarkedElements * currentSelectedNumbers[currentSelectedNumbers.length - 1]
             }
         }
 
