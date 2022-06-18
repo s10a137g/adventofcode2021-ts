@@ -28,14 +28,27 @@ export class Card {
     }
 
     isBingo(searchArg: number[]): [boolean, number | null] {
-        const unmatchElement: number[] = []
+        const unmatchedElements: number[] = []
+        let bingoFlg = false
         for (let row of this.rows) {
-            if ( row.elements.every(element => searchArg.includes(element)){
-                return [true, unmatchElement.reduce((sum, v) => sum += v)]
+            const tmpMatchedElements = []
+            for (let element of row.elements) {
+                if(!searchArg.includes(element)) {
+                    unmatchedElements.push(element)
+                } else {
+                    tmpMatchedElements.push(element)
+                }
+            }
+            if (tmpMatchedElements.length === 5) {
+                bingoFlg = true
             }
         }
 
-        return [false, null]
+        if (bingoFlg) {
+            return [true, unmatchedElements.reduce((sum, v) => sum += v)]
+        } else {
+            return [false, null]
+        }
     }
 }
 
@@ -79,20 +92,15 @@ export const
         const carsRows = args.slice(1).map(v => v.split(/ +/).filter(v => v !== ''))
 
         const cards = createCards(carsRows.slice(1))
-        console.log(cards.map(v => v.rows.map(v => v.elements)))
-        console.log(cards.map(v => v.transpose().rows.map(v => v.elements)))
-
 
         const processSelectedNumbers = []
         for (let n of selectedNumbers) {
             processSelectedNumbers.push(+n)
             const [unmatchSum, bingoNumber] = doBingo(cards, processSelectedNumbers)
             if (!!unmatchSum) {
-                console.log(unmatchSum, bingoNumber)
                 return unmatchSum * bingoNumber
             }
         }
-        console.log(doBingo([cards[0]], [22, 8, 21, 6, 2, 1]))
 
         return 0
     }
