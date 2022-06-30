@@ -9,8 +9,8 @@ test('day4-1', (): void => {
   expect(day4_1(inputData)).toBe(25410)
 })
 
-// test("day4-2", (): void => {
-//     console.log('day4-2 test')
-//     expect(day3_2(testData)).toBe(230)
-//     expect(day3_2(inputData)).toBe(1800151)
-// })
+test('day4-2', (): void => {
+  console.log('day4-2 test')
+  expect(day4_2(testData)).toBe(1924)
+  // expect(day4_2(inputData)).toBe(1800151)
+})
