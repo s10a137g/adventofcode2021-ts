@@ -10,7 +10,6 @@ test('day4-1', (): void => {
 })
 
 test('day4-2', (): void => {
-  console.log('day4-2 test')
   expect(day4_2(testData)).toBe(1924)
   expect(day4_2(inputData)).toBe(2730)
 })

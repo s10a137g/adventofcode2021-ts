@@ -3,7 +3,7 @@ import { Row } from './Row'
 export class Card {
   rows: Row[]
 
-  ROWS_LENGTH = 5
+  CELLS_PER_ROW = 5
 
   constructor(strRows: string[][]) {
     this.rows = strRows.map((row) => new Row(row))
@@ -30,7 +30,14 @@ export class Card {
   isBingo(searchArg: number[]): boolean {
     for (const row of this.rows) {
       const [matchedElements, _] = row.splitMarkedElements(searchArg)
-      if (matchedElements.length === this.ROWS_LENGTH) {
+      if (matchedElements.length === this.CELLS_PER_ROW) {
+        return true
+      }
+    }
+
+    for (const row of this.transpose().rows) {
+      const [matchedElements, _] = row.splitMarkedElements(searchArg)
+      if (matchedElements.length === this.CELLS_PER_ROW) {
         return true
       }
     }
@@ -47,7 +54,7 @@ export class Card {
 
     for (const row of this.rows) {
       const [matchedElements, unmatchedElements] = row.splitMarkedElements(searchArg)
-      if (matchedElements.length === this.ROWS_LENGTH) {
+      if (matchedElements.length === this.CELLS_PER_ROW) {
         const allElements: number[] = this.rows.map((v) => v.elements).flatMap((arr) => arr)
         const unmarkedElements = allElements.filter((x) => !searchArg.includes(x))
         const sumOfUnmarkedElements = unmarkedElements.reduce((sum, num) => sum + num, 0)
@@ -59,22 +66,6 @@ export class Card {
     const sumOfUnmarkedElements = unmarkedElements.reduce((sum, num) => sum + num, 0)
     return [sumOfUnmarkedElements, false]
   }
-
-  // getSumOfUnmarkedElement(searchArg: number[]): number | null {
-  //   let bingoFlg = false
-  //   const unmatchedElements: number[] = []
-  //   for (let row of this.rows) {
-  //     const [matchedElement, unmatchedElement] = row.splitMarkedElements(searchArg)
-  //
-  //     matchedElement.length === this.ROWS_LENGTH
-  //       ? bingoFlg = true
-  //       : unmatchedElement.forEach(element => unmatchedElements.push(element))
-  //   }
-  //
-  //   return bingoFlg
-  //     ? unmatchedElements.reduce((sum, v) => sum + v)
-  //     : null
-  // }
 }
 
 export const createCards = (rows: string[][]): Card[] => {

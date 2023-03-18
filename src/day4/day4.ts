@@ -78,18 +78,12 @@ export const getSumOfUnmarkedElementWhenFirstBingo = (cards: Card[], searchArgs:
 }
 
 function getIndexOfBingoCard(cards: Card[], currentSelectedNumbers: number[]): number[] {
-  const cardPairs = cards.map((card) => [card, card.transpose()])
-
   const indexArray: number[] = []
 
-  cardPairs.forEach((pair, index) => {
-    const result = pair.map((card) => (card.isBingo(currentSelectedNumbers) ? index : -1))
-    const bingoIndexes = result.filter((v) => v !== -1)
-
-    if (bingoIndexes.length > 0) {
-      indexArray.push(Math.min(...bingoIndexes))
-    }
-  })
+  cards
+    .map((card, index) => (card.isBingo(currentSelectedNumbers) ? index : -1))
+    .filter((v) => v !== -1)
+    .forEach((v) => indexArray.push(v))
 
   return indexArray
 }
