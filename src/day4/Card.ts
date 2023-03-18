@@ -6,14 +6,13 @@ export class Card {
   ROWS_LENGTH = 5
 
   constructor(strRows: string[][]) {
-    this.rows = strRows.map(row => new Row(row))
+    this.rows = strRows.map((row) => new Row(row))
   }
 
   /**
    * 行列を転置したカードを返す
    */
   transpose(): Card {
-
     const transposeStrRows: string[][] = []
 
     for (let i = 0; i < this.rows.length; i++) {
@@ -28,25 +27,54 @@ export class Card {
     return new Card(transposeStrRows)
   }
 
+  isBingo(searchArg: number[]): boolean {
+    for (const row of this.rows) {
+      const [matchedElements, _] = row.splitMarkedElements(searchArg)
+      if (matchedElements.length === this.ROWS_LENGTH) {
+        return true
+      }
+    }
+
+    return false
+  }
+
   /**
    *  抽選番号に含まれないビンゴカードの数字の合計値を計算して返す
    * @param searchArg
    */
-  getSumOfUnmarkedElement(searchArg: number[]): number | null {
-    let bingoFlg = false
-    const unmatchedElements: number[] = []
-    for (let row of this.rows) {
-      const [matchedElement, unmatchedElement] = row.splitMarkedElements(searchArg)
+  getSumOfUnmarkedElement(searchArg: number[]): [number, boolean] {
+    const unmarkedElements: number[] = []
 
-      matchedElement.length === this.ROWS_LENGTH
-        ? bingoFlg = true
-        : unmatchedElement.forEach(element => unmatchedElements.push(element))
+    for (const row of this.rows) {
+      const [matchedElements, unmatchedElements] = row.splitMarkedElements(searchArg)
+      if (matchedElements.length === this.ROWS_LENGTH) {
+        const allElements: number[] = this.rows.map((v) => v.elements).flatMap((arr) => arr)
+        const unmarkedElements = allElements.filter((x) => !searchArg.includes(x))
+        const sumOfUnmarkedElements = unmarkedElements.reduce((sum, num) => sum + num, 0)
+        return [sumOfUnmarkedElements, true] // Bingo
+      }
+      unmarkedElements.push(...unmatchedElements)
     }
 
-    return bingoFlg
-      ? unmatchedElements.reduce((sum, v) => sum + v)
-      : null
+    const sumOfUnmarkedElements = unmarkedElements.reduce((sum, num) => sum + num, 0)
+    return [sumOfUnmarkedElements, false]
   }
+
+  // getSumOfUnmarkedElement(searchArg: number[]): number | null {
+  //   let bingoFlg = false
+  //   const unmatchedElements: number[] = []
+  //   for (let row of this.rows) {
+  //     const [matchedElement, unmatchedElement] = row.splitMarkedElements(searchArg)
+  //
+  //     matchedElement.length === this.ROWS_LENGTH
+  //       ? bingoFlg = true
+  //       : unmatchedElement.forEach(element => unmatchedElements.push(element))
+  //   }
+  //
+  //   return bingoFlg
+  //     ? unmatchedElements.reduce((sum, v) => sum + v)
+  //     : null
+  // }
 }
 
 export const createCards = (rows: string[][]): Card[] => {

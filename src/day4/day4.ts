@@ -35,37 +35,27 @@ export const day4_2 = (args: string[]): number => {
 
   const cards = createCards(carsRows.slice(1))
 
-  // 最後にビンゴになったタイミングのビンゴカードのコールされなかったマークの合算
-  return getSumOfUnmarkedElementWhenLastBingo(
-    cards,
-    selectedNumbers.map((v) => +v)
-  )
-}
-
-/**
- * 最後にビンゴになったタイミングでコールされなかったマスの合算値を返す
- * @param cards
- * @param searchArgs
- */
-export const getSumOfUnmarkedElementWhenLastBingo = (cards: Card[], searchArgs: number[]): number => {
-  const result = getSumOfUnmarkedElementWhenFirstBingoWithIndex(cards, searchArgs)
-
-  // TODO: コール番号が1つずつ呼ばれて最後に返すようにする
+  let restCards = cards
   const currentSelectedNumbers = []
-  for (let n of searchArgs) {
+
+  for (let n of selectedNumbers) {
     // コールされた数をスタックする
-    // currentSelectedNumbers.push(+n)
-    //
-    // if (!!unmarkedElements) {
-    //   return unmarkedElements * currentSelectedNumbers[currentSelectedNumbers.length - 1]
-    // }
+    currentSelectedNumbers.push(+n)
+
+    if (restCards.length === 1) {
+      // 最後にビンゴになったビンゴカードのコールされなかったマークの合算
+      const unmarkedElements = getSumOfUnmarkedElementWhenFirstBingo(restCards, currentSelectedNumbers)
+      if (!!unmarkedElements) {
+        return unmarkedElements * currentSelectedNumbers[currentSelectedNumbers.length - 1]
+      }
+    }
+
+    const indexArray = getIndexOfBingoCard(restCards, currentSelectedNumbers)
+
+    restCards = restCards.filter((_, index) => !indexArray.includes(index))
   }
 
-  if (cards.length === 1) {
-    return result[0]
-  }
-
-  return getSumOfUnmarkedElementWhenLastBingo(cards.splice(result[1]), searchArgs)
+  return 0
 }
 
 /**
@@ -77,40 +67,29 @@ export const getSumOfUnmarkedElementWhenFirstBingo = (cards: Card[], searchArgs:
   const allCards = cards.concat(cards.map((card) => card.transpose()))
 
   for (let card of allCards) {
-    const unmarkedSum = card.getSumOfUnmarkedElement(searchArgs)
+    const [unmarkedSum, isBingo] = card.getSumOfUnmarkedElement(searchArgs)
 
     // 合算値が返ってきた = はじめにビンゴのカードが出てきた
-    if (!!unmarkedSum) {
+    if (isBingo) {
       return unmarkedSum
     }
   }
   return null
 }
 
-/**
- * 最初にビンゴになったタイミングでコールされなかったマスの合算値を返す
- * @param cards
- * @param searchArgs
- */
-export const getSumOfUnmarkedElementWhenFirstBingoWithIndex = (
-  cards: Card[],
-  searchArgs: number[]
-): [number, number] => {
+function getIndexOfBingoCard(cards: Card[], currentSelectedNumbers: number[]): number[] {
   const cardPairs = cards.map((card) => [card, card.transpose()])
 
-  let index = 0
+  const indexArray: number[] = []
+  cardPairs.forEach((pair, index) => {
+    const result = pair.map((card) => (card.isBingo(currentSelectedNumbers) ? index : -1))
 
-  for (let pair of cardPairs) {
-    for (let card of pair) {
-      const unmarkedSum = card.getSumOfUnmarkedElement(searchArgs)
-
-      // 合算値が返ってきた = はじめにビンゴのカードが出てきた
-      if (!!unmarkedSum) {
-        console.log(unmarkedSum, index)
-        return [unmarkedSum, index]
-      }
+    if (!result.every((v) => v === -1) && result.some((v) => v === -1)) {
+      return indexArray.push(result.find((v) => v !== -1)!)
+    } else {
+      return indexArray.push(Math.min(...result))
     }
-    index += 1
-  }
-  return [0, 0]
+  })
+
+  return indexArray.filter((v) => v !== -1)
 }
