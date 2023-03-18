@@ -81,15 +81,15 @@ function getIndexOfBingoCard(cards: Card[], currentSelectedNumbers: number[]): n
   const cardPairs = cards.map((card) => [card, card.transpose()])
 
   const indexArray: number[] = []
+
   cardPairs.forEach((pair, index) => {
     const result = pair.map((card) => (card.isBingo(currentSelectedNumbers) ? index : -1))
+    const bingoIndexes = result.filter((v) => v !== -1)
 
-    if (!result.every((v) => v === -1) && result.some((v) => v === -1)) {
-      return indexArray.push(result.find((v) => v !== -1)!)
-    } else {
-      return indexArray.push(Math.min(...result))
+    if (bingoIndexes.length > 0) {
+      indexArray.push(Math.min(...bingoIndexes))
     }
   })
 
-  return indexArray.filter((v) => v !== -1)
+  return indexArray
 }
